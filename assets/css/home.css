@@ -1,0 +1,22 @@
+body {
+  text-align: center;
+}
+ul {
+  list-style: none;
+}
+.contact {
+  display: flex;
+  justify-content: space-around;
+}
+.contact li {
+  display: flex;
+  justify-content: space-around;
+  flex-grow: 1;
+}
+a{
+  color: red;
+  text-decoration: none;
+}
+.delete-button {
+  margin-inline: 2rem;
+}
