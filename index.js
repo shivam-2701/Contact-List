@@ -8,20 +8,6 @@ const db = require('./config/mongoose');
 const Contact = require('./models/contact');
 
 const bodyParser = require('body-parser');
-var contactList = [
-    {
-        name: "Arpan",
-        phone: "1111111111"
-    },
-    {
-        name: "Tony Stark",
-        phone: "1234567890"
-    },
-    {
-        name: "Coding Ninjas",
-        phone: "12131321321"
-    }
-]
 app.set('view engine', 'ejs');
 app.use(express.static('assets'));
 app.set('views', path.join(__dirname, 'views'));
@@ -29,9 +15,15 @@ app.use(bodyParser.urlencoded({ extended: false }));
 
 
 app.get('/', (req, res) => {
-    return res.render('home', {
-        title: 'Home',
-        contact_list: contactList
+    Contact.find({}, (err, contactList) => {
+        if (err) {
+            console.log('Error Fetching', err);
+            return res.redirect('/error');
+        }
+        return res.render('home', {
+            title: 'Home',
+            contact_list: contactList
+        });
     });
 })
 app.get('/practice', (req, res) => {
@@ -39,16 +31,26 @@ app.get('/practice', (req, res) => {
         title: 'Practice',
     });
 });
+
 app.post('/create-contact', (req, res) => {
-    contactList.push(req.body);
-    res.redirect('/');
+    Contact.create({
+        name: req.body.name,
+        phone: req.body.phone
+    }, (err, newContact) => {
+        if (err) {
+            console.log('Error creating contact!')
+            return;
+        }
+        // console.log('******',newContact);
+        return res.redirect('back');
+    });
 });
 
 
 function deleteContact(contactItem) {
     let index = -1;
 
-    index =contactList.findIndex((item)=>item.phone === contactItem.phone);
+    index = contactList.findIndex((item) => item.phone === contactItem.phone);
 
     if (index != -1)
         contactList.splice(index, 1);
@@ -56,14 +58,18 @@ function deleteContact(contactItem) {
 
 app.get('/delete-contact', (req, res) => {
 
-    let item = {
-        name: req.query.name,
-        phone: req.query.phone
-    };
+    let id = req.query.id;
 
-    deleteContact(item);
 
-    return res.redirect('back');
+    Contact.findByIdAndDelete(id,(err)=>{
+        if(err){
+            console.log("Unable to delete contact",err);
+            return;
+        }
+        console.log("Contact delete success");
+        return res.redirect('/');
+    })
+
 
 });
 
